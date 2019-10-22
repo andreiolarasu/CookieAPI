@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using CookieAPI.Models;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
 
 namespace CookieAPI.Controllers
 {
@@ -12,15 +11,29 @@ namespace CookieAPI.Controllers
     [ApiController]
     public class CookiesController : ControllerBase
     {
-        [HttpPost]
-        public void AddPreferences(CookiePreferencesModel data)
+        private readonly IHostingEnvironment _hostingEnvironment;
+
+        public CookiesController(IHostingEnvironment hostingEnvironment)
         {
-            var preferences = data;
+            _hostingEnvironment = hostingEnvironment;
+        }
+
+        [HttpPost]
+        public async Task AddPreferencesFromJsonAsync()
+        {
+            string data;
+            using (StreamReader reader = new StreamReader(Request.Body))
+            {
+                data = await reader.ReadToEndAsync();
+            }
+
+            var preferences = JsonConvert.DeserializeObject<dynamic>(data);
 
             preferences.Id = Guid.NewGuid();
             preferences.Created = DateTime.Now;
 
-            DAL.DAL.AddCookiePreferences(preferences);
+            var path = _hostingEnvironment.ContentRootPath;
+            System.IO.File.AppendAllText($"{path}/survey/survey.json", JsonConvert.SerializeObject(preferences) + "," + Environment.NewLine);
 
         }
     }
