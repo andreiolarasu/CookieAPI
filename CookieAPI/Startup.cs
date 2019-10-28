@@ -40,6 +40,10 @@ namespace CookieAPI
                 app.UseHsts();
             }
 
+            app.UseCors();
+            app.UseOptions();
+
+
             app.UseHttpsRedirection();
             app.UseMvc();
         }
