@@ -18,6 +18,16 @@ namespace CookieAPI.Controllers
             _hostingEnvironment = hostingEnvironment;
         }
 
+        [HttpOptions]
+        public void OptionsMethod()
+        {
+            Response.StatusCode = 200;
+            Response.Headers.Add("Access-Control-Allow-Origin", new[] { (string)Request.Headers["Origin"] });
+            Response.Headers.Add("Access-Control-Allow-Headers", new[] { "Origin, X-Requested-With, Content-Type, Accept" });
+            Response.Headers.Add("Access-Control-Allow-Methods", new[] { "GET, POST, PUT, DELETE, OPTIONS" });
+            Response.Headers.Add("Access-Control-Allow-Credentials", new[] { "true" });
+        }
+
         [HttpPost]
         public async Task AddPreferencesFromJsonAsync()
         {
@@ -34,6 +44,12 @@ namespace CookieAPI.Controllers
 
             var path = _hostingEnvironment.ContentRootPath;
             System.IO.File.AppendAllText($"{path}/survey/survey.json", JsonConvert.SerializeObject(preferences) + "," + Environment.NewLine);
+
+            Response.Headers.Add("Access-Control-Allow-Origin", new[] { (string)Request.Headers["Origin"] });
+            Response.Headers.Add("Access-Control-Allow-Headers", new[] { "Origin, X-Requested-With, Content-Type, Accept" });
+            Response.Headers.Add("Access-Control-Allow-Methods", new[] { "GET, POST, PUT, DELETE, OPTIONS" });
+            Response.Headers.Add("Access-Control-Allow-Credentials", new[] { "true" });
+            Response.StatusCode = 200;
 
         }
     }
