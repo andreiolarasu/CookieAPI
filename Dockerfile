@@ -1,16 +1,19 @@
-FROM microsoft/dotnet:2.1-sdk AS build-env
+FROM mcr.microsoft.com/dotnet/core/aspnet:2.1-stretch-slim AS base
 WORKDIR /app
 
-# Copy csproj and restore as distinct layers
-COPY ./*.csproj ./
-RUN dotnet restore
 
-# Copy everything else and build
-COPY . ./
-RUN dotnet publish -c Release -o out
+FROM mcr.microsoft.com/dotnet/core/sdk:2.1-stretch AS build
+WORKDIR /src
+COPY ["./CookieAPI/CookieAPI.csproj", "CookieAPI/"]
+RUN dotnet restore "./CookieAPI/CookieAPI.csproj"
+COPY . .
+WORKDIR "CookieAPI"
+RUN dotnet build "CookieAPI.csproj" -c Release -o /app
 
-# Build runtime image
-FROM microsoft/dotnet:2.1-aspnetcore-runtime
+FROM build AS publish
+RUN dotnet publish "CookieAPI.csproj" -c Release -o /app
+
+FROM base AS final
 WORKDIR /app
-COPY --from=build-env /app/out .
-CMD dotnet AspNetCoreHerokuDocker.dll
+COPY --from=publish /app .
+CMD dotnet aspnetapp.dll
